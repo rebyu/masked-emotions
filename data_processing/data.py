@@ -97,9 +97,9 @@ def get_image_data(data_splits):
     data = []
     data_labels = []
     for d in data_splits:
-        image_names = d['image'].tolist()
-        emotion_keys = d['emotion_keys'].tolist()
-        masked_images, emotion = load_images(image_names, emotion_keys)
+        images = d[' pixels'].tolist()
+        emotion_keys = d['emotion'].tolist()
+        masked_images, emotions = load_images(image_names, emotion_keys)
         data.append(masked_images)
         data_labels.append(emotion)
     return data, data_labels
