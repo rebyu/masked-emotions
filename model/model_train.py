@@ -90,8 +90,9 @@ def eval(loader, criterion=nn.CrossEntropyLoss(), model=None, verbose=True, name
 
     return accuracy, avg_loss
 
-def train_model(model, checkpoint, optimizer,
-                verbose=True, criterion=nn.CrossEntropyLoss(), num_epochs=30):
+def train_model(model, checkpoint, optimizer, train_set, valid_set,
+                verbose=True, criterion=nn.CrossEntropyLoss(),
+                num_epochs=30):
 
     valid_loss = []
     train_loss = []
@@ -106,7 +107,7 @@ def train_model(model, checkpoint, optimizer,
         curr_loss = 0
 
         # train/gradient descent
-        for x, y in valid_loader:
+        for x, y in train_set:
             if gpu_bool:
                 x, y = x.cuda(), y.cuda()
 
@@ -122,13 +123,13 @@ def train_model(model, checkpoint, optimizer,
                 torch.cuda.empty_cache()
 
         # evaluate performance
-        curr_loss /= (len(valid_loader) * 32)
+        curr_loss /= (len(train_set) * 32)
 
         if verbose:
             print("Epoch",epoch+1,':')
             print("train loss:", curr_loss)
 
-        _, v_loss = eval(valid_loader, model=model, name="valid", verbose=verbose)
+        _, v_loss = eval(valid_set, model=model, name="valid", verbose=verbose)
         train_loss.append(curr_loss)
         valid_loss.append(v_loss)
 
