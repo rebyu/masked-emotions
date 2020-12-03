@@ -20,13 +20,10 @@ def split_labels():
     # load data
     data = pd.read_csv(DATA_CSV)
 
-    # randomly shuffle all data
-    data = data.sample(frac=1, random_state=0)
-
     # factorize all keys to integers
-    train_split = data[data['Usage'] == 'Training'].drop(labels='Usage', axis=1)
-    valid_split = data[data['Usage'] == 'PublicTest'].drop(labels='Usage', axis=1)
-    test_split = data[data['Usage'] == 'PrivateTest'].drop(labels='Usage', axis=1)
+    train_split = data[data[' Usage'] == 'Training'].drop(labels=' Usage', axis=1)
+    valid_split = data[data[' Usage'] == 'PublicTest'].drop(labels=' Usage', axis=1)
+    test_split = data[data[' Usage'] == 'PrivateTest'].drop(labels=' Usage', axis=1)
 
     return train_split, valid_split, test_split # <- dont know the keys thing
 
@@ -62,7 +59,7 @@ def get_masked_face(img):
 
 def convert_to_image(txt):
     out = np.array([int(x) for x in txt.split(' ')]).reshape(48, 48)
-    out = cv2.resize(np.float32(out), dsize=(224, 224), interpolation=cv2.INTER_CUBIC)
+    out = cv2.resize(np.float32(out), dsize=(110, 110), interpolation=cv2.INTER_CUBIC)
     return np.uint8(out)
 
 def load_images(images, emotions, split):
@@ -77,6 +74,7 @@ def load_images(images, emotions, split):
             masked = get_masked_face(image)
             out_emotions.append(emotion)
             cv2.imwrite(file_location, masked)
+
             idx += 1
         except Exception as e:
             print('Cannot find face, skipping...')
@@ -95,7 +93,7 @@ def get_image_data(data_splits):
     """
 
     for split, data in data_splits.items():
-        images = data['pixels'].tolist()
+        images = data[' pixels'].tolist()
         emotions = data['emotion'].tolist()
         out_emotions = load_images(images, emotions, split)
         np.save(os.path.join(IMAGE_DIR_LOC, 'images', split, 'labels.npy'), out_emotions)

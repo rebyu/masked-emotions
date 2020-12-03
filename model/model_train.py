@@ -226,13 +226,13 @@ if __name__ == "__main__":
     if args['model'] == 'alexnet':
         net = models.alexnet(pretrained=True)
         net.classifier[6] = nn.Linear(in_features=4096, out_features=7, bias=True)
-    elif args['model'] == 'alexnet':
+    elif args['model'] == 'vgg':
         net = models.vgg11_bn(pretrained=True)
         net.classifier[6] = nn.Linear(in_features=4096, out_features=7, bias=True)
-    elif args['model'] == 'alexnet':
+    elif args['model'] == 'resnet':
         net = models.resnet18(pretrained=True)
         net.fc = nn.Linear(in_features=512, out_features=7, bias=True)
-    elif args['model'] == 'alexnet':
+    elif args['model'] == 'densenet':
         net = models.densenet121(pretrained=True)
         net.classifier = nn.Linear(in_features=1024, out_features=7, bias=True)
     else:
