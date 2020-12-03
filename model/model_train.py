@@ -100,7 +100,7 @@ def train_model(
     valid_loss = []
     train_loss = []
     best_loss = float('inf')
-    checkpoint = deepcopy(model.cpu())
+    checkpoint = deepcopy(model)
 
     if gpu_bool:
         model = model.cuda()
@@ -147,7 +147,7 @@ def train_model(
             if verbose:
                 print("New best - loss of {0} compared to {1}".format(v_loss, best_loss))
 
-            checkpoint = model.load_state_dict(model.state_dict())
+            checkpoint.load_state_dict(model.state_dict())
             best_loss = v_loss
 
         time2 = time.time() #timekeeping
@@ -163,6 +163,9 @@ def train_model(
 
 def fill_args():
     args = {}
+
+    if '--help' in sys.argv:
+        return None
 
     index = sys.argv.index('--model') + 1
     args['model'] = sys.argv[index]
@@ -194,11 +197,18 @@ def fill_args():
     except ValueError:
         pass
 
+    try:
+        index = sys.argv.index('--pretrained') + 1
+        args['pretrained'] = True
+    except ValueError:
+        pass
+
     return args
 
 
 def main():
-    """
+    help_args = """
+        --help :
         --model_dir : str
         --batch_size : int
         --learning_rate : float
@@ -207,17 +217,23 @@ def main():
         --data_loc : str
         --model : str
         --verbose : flag
+        --pretrained : flag
 
         add later if neccesary
         --use_adam :
         --momentum :
-        --help :
     """
 
     args = fill_args()
+    if args is None:
+        print(help_args)
+        return
 
     verbose = 'verbose' in args
-    print(torch.__version__)
+    
+    if verbose:
+        print(torch.__version__)
+        print(args)
 
     train_set = KaggleDataset(
         args['data_loc'],
@@ -234,16 +250,16 @@ def main():
     net = None
 
     if args['model'] == 'alexnet':
-        net = models.alexnet(pretrained=True)
+        net = models.alexnet(pretrained='pretrained' in args)
         net.classifier[6] = nn.Linear(in_features=4096, out_features=7, bias=True)
     elif args['model'] == 'vgg':
-        net = models.vgg11_bn(pretrained=True)
+        net = models.vgg11_bn(pretrained='pretrained' in args)
         net.classifier[6] = nn.Linear(in_features=4096, out_features=7, bias=True)
     elif args['model'] == 'resnet':
-        net = models.resnet18(pretrained=True)
+        net = models.resnet18(pretrained='pretrained' in args)
         net.fc = nn.Linear(in_features=512, out_features=7, bias=True)
     elif args['model'] == 'densenet':
-        net = models.densenet121(pretrained=True)
+        net = models.densenet121(pretrained='pretrained' in args)
         net.classifier = nn.Linear(in_features=1024, out_features=7, bias=True)
     else:
         raise ValueError("no such model named " + str(args['model']))
