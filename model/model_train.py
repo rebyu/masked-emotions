@@ -72,7 +72,7 @@ def evaluate_model(
     correct = 0
     total = 0
     loss_sum = 0
-    predict = []
+    predict = np.zeros(1)
 
     for x, y in loader:
         if gpu_bool:
@@ -85,10 +85,8 @@ def evaluate_model(
         correct += (predicted.float() == y.float()).cpu().sum().data.numpy().item()
         loss_sum += criterion(outputs, y).cpu().data.numpy().item()
 
-        predict.append(predicted.cpu().numpy().tolist())
+        predict = np.append(predict, predicted.cpu().numpy())
 
-
-    predict = np.array(predict)
     accuracy = correct / total
     avg_loss = loss_sum / total
 
@@ -96,7 +94,7 @@ def evaluate_model(
         print('%s accuracy: %f %%' % (name, 100 * accuracy))
         print('%s loss: %f' % (name, avg_loss))
 
-    return accuracy, avg_loss, predict
+    return accuracy, avg_loss, predict[1:]
 
 
 def train_model(
@@ -254,6 +252,7 @@ def main():
     if verbose:
         print(torch.__version__)
         print(args)
+        print()
 
     train_set = KaggleDataset(
         args['data_loc'],
@@ -291,6 +290,7 @@ def main():
         print("train size:", len(train_loader))
         print("valid size:", len(valid_loader))
         print("test size:", len(test_loader))
+        print()
 
     sys.stdout.flush()
     opt = torch.optim.SGD(net.parameters(), lr=args['learning_rate'], momentum=args['momentum'])
