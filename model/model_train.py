@@ -247,7 +247,9 @@ if __name__ == "__main__":
         os.makedirs(args['model_dir'])
 
     opt = torch.optim.SGD(net.parameters(), lr=args['learning_rate'])
-    t_loss, v_loss = train_model(model=net, checkpoint=best_net, optimizer=opt, num_epochs=args['num_epochs'], verbose=verbose)
+    t_loss, v_loss = train_model(model=net, checkpoint=best_net, optimizer=opt,
+        train_set=train_loader, valid_set=valid_loader,
+        num_epochs=args['num_epochs'], verbose=verbose)
 
     if verbose:
         f_acc, f_loss = eval(test_loader, model=best_net.cuda(), name="test", verbose=verbose)
