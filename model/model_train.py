@@ -64,8 +64,10 @@ class KaggleDataset(Dataset):
         return img, label
 
 
-def evaluate_model(loader, criterion=nn.CrossEntropyLoss(), model=None,
-                    verbose=True, name=""):
+def evaluate_model(
+        loader, criterion=nn.CrossEntropyLoss(), model=None,
+        verbose=True, name=""):
+
     correct = 0
     total = 0
     loss_sum = 0
@@ -91,16 +93,17 @@ def evaluate_model(loader, criterion=nn.CrossEntropyLoss(), model=None,
     return accuracy, avg_loss
 
 
-def train_model(model, optimizer, train_l, valid_l, verbose=True,
-                criterion=nn.CrossEntropyLoss(), num_epochs=30):
+def train_model(
+        model, optimizer, train_l, valid_l, verbose=True,
+        criterion=nn.CrossEntropyLoss(), num_epochs=30):
 
     valid_loss = []
     train_loss = []
     best_loss = float('inf')
-    checkpoint = deepcopy(model)
+    checkpoint = deepcopy(model.cpu())
 
     if gpu_bool:
-        net = net.cuda()
+        model = model.cuda()
 
     if verbose:
         print("Starting Training...")
@@ -149,13 +152,13 @@ def train_model(model, optimizer, train_l, valid_l, verbose=True,
 
         time2 = time.time() #timekeeping
         if verbose:
-            print('Elapsed time for epoch:',time2 - time1, 's')
+            print('Elapsed time for epoch:', time2 - time1, 's')
             print('ETA of completion:', (time2 - time1)*(num_epochs - epoch - 1)/60, 'minutes')
             print()
 
         sys.stdout.flush()
 
-    return train_loss, valid_loss, checkpoint
+    return train_loss, valid_loss, model, checkpoint
 
 
 def fill_args():
@@ -256,13 +259,13 @@ def main():
 
     sys.stdout.flush()
     opt = torch.optim.SGD(net.parameters(), lr=args['learning_rate'])
-    t_loss, v_loss, best_net = train_model(
+    t_loss, v_loss, net, best_net = train_model(
         model=net, optimizer=opt,
         train_l=train_loader, valid_l=valid_loader,
         num_epochs=args['num_epochs'], verbose=verbose)
 
     if verbose:
-        f_acc, f_loss = evaluate_model(test_loader, model=best_net.cuda(), name="test", verbose=verbose)
+        _, f_loss = evaluate_model(test_loader, model=best_net.cuda(), name="test", verbose=verbose)
 
         plt.figure(figsize=(7, 5))
         plt.plot(list(range(args['num_epochs'])), t_loss, label='Training Loss')
