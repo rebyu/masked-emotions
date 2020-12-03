@@ -5,17 +5,16 @@ import sys
 import os
 import json
 import time
-import numpy as np
-import cv2
 from copy import deepcopy
 
 import matplotlib.pyplot as plt
+import numpy as np
+import cv2
 
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, models
-from skimage import io
 
 gpu_bool = torch.cuda.is_available()
 
@@ -65,7 +64,8 @@ class KaggleDataset(Dataset):
         return img, label
 
 
-def eval(loader, criterion=nn.CrossEntropyLoss(), model=None, verbose=True, name=""):
+def evaluate_model(loader, criterion=nn.CrossEntropyLoss(), model=None,
+                    verbose=True, name=""):
     correct = 0
     total = 0
     loss_sum = 0
@@ -90,15 +90,21 @@ def eval(loader, criterion=nn.CrossEntropyLoss(), model=None, verbose=True, name
 
     return accuracy, avg_loss
 
-def train_model(model, checkpoint, optimizer, train_set, valid_set,
-                verbose=True, criterion=nn.CrossEntropyLoss(),
-                num_epochs=30):
+
+def train_model(model, optimizer, train_l, valid_l, verbose=True,
+                criterion=nn.CrossEntropyLoss(), num_epochs=30):
 
     valid_loss = []
     train_loss = []
     best_loss = float('inf')
+    checkpoint = deepcopy(model)
 
-    if verbose: print("Starting Training...")
+    if gpu_bool:
+        net = net.cuda()
+
+    if verbose:
+        print("Starting Training...")
+        sys.stdout.flush()
 
     # training loop
     for epoch in range(num_epochs):
@@ -107,7 +113,7 @@ def train_model(model, checkpoint, optimizer, train_set, valid_set,
         curr_loss = 0
 
         # train/gradient descent
-        for x, y in train_set:
+        for x, y in train_l:
             if gpu_bool:
                 x, y = x.cuda(), y.cuda()
 
@@ -123,34 +129,37 @@ def train_model(model, checkpoint, optimizer, train_set, valid_set,
                 torch.cuda.empty_cache()
 
         # evaluate performance
-        curr_loss /= (len(train_set) * 32)
+        curr_loss /= (len(train_l) * 32)
 
         if verbose:
-            print("Epoch",epoch+1,':')
+            print("Epoch", epoch + 1, ':')
             print("train loss:", curr_loss)
 
-        _, v_loss = eval(valid_set, model=model, name="valid", verbose=verbose)
+        _, v_loss = evaluate_model(valid_l, model=model, name="valid", verbose=verbose)
         train_loss.append(curr_loss)
         valid_loss.append(v_loss)
 
         # update best model/early stopping
         if v_loss < best_loss:
-            if verbose: print("New best - loss of {0} compared to {1}".format(v_loss, best_loss))
+            if verbose:
+                print("New best - loss of {0} compared to {1}".format(v_loss, best_loss))
 
             checkpoint = model.load_state_dict(model.state_dict())
             best_loss = v_loss
 
         time2 = time.time() #timekeeping
         if verbose:
-            print('Elapsed time for epoch:',time2 - time1,'s')
-            print('ETA of completion:',(time2 - time1)*(num_epochs - epoch - 1)/60,'minutes')
+            print('Elapsed time for epoch:',time2 - time1, 's')
+            print('ETA of completion:', (time2 - time1)*(num_epochs - epoch - 1)/60, 'minutes')
             print()
 
-    return train_loss, valid_loss
+        sys.stdout.flush()
 
+    return train_loss, valid_loss, checkpoint
 
 
 def fill_args():
+    args = {}
 
     index = sys.argv.index('--model') + 1
     args['model'] = sys.argv[index]
@@ -182,11 +191,10 @@ def fill_args():
     except ValueError:
         pass
 
-    return
+    return args
 
 
-if __name__ == "__main__":
-    args = {}
+def main():
     """
         --model_dir : str
         --batch_size : int
@@ -203,7 +211,7 @@ if __name__ == "__main__":
         --help :
     """
 
-    fill_args()
+    args = fill_args()
 
     verbose = 'verbose' in args
     print(torch.__version__)
@@ -215,13 +223,12 @@ if __name__ == "__main__":
     train_loader = DataLoader(dataset=train_set, batch_size=args['batch_size'], shuffle=True)
 
     valid_set = KaggleDataset(args['data_loc'], 'valid', dataset_transforms)
-    valid_loader = DataLoader(dataset=train_set, batch_size=args['batch_size'], shuffle=False)
+    valid_loader = DataLoader(dataset=valid_set, batch_size=args['batch_size'], shuffle=False)
 
     test_set = KaggleDataset(args['data_loc'], 'test', dataset_transforms)
-    test_loader = DataLoader(dataset=train_set, batch_size=args['batch_size'], shuffle=False)
+    test_loader = DataLoader(dataset=test_set, batch_size=args['batch_size'], shuffle=False)
 
     net = None
-    best_net = None
 
     if args['model'] == 'alexnet':
         net = models.alexnet(pretrained=True)
@@ -238,21 +245,23 @@ if __name__ == "__main__":
     else:
         raise ValueError("no such model named " + str(args['model']))
 
-    best_net = deepcopy(net)
-    if gpu_bool:
-        net = net.cuda()
-
     if not os.path.exists(args['model_dir']):
         os.makedirs(args['model_dir'])
 
+    if verbose:
+        print("train size:", len(train_loader))
+        print("valid size:", len(valid_loader))
+        print("test size:", len(test_loader))
+
+    sys.stdout.flush()
     opt = torch.optim.SGD(net.parameters(), lr=args['learning_rate'])
-    t_loss, v_loss = train_model(model=net, checkpoint=best_net, optimizer=opt,
-        train_set=train_loader, valid_set=valid_loader,
+    t_loss, v_loss, best_net = train_model(
+        model=net, optimizer=opt,
+        train_l=train_loader, valid_l=valid_loader,
         num_epochs=args['num_epochs'], verbose=verbose)
 
     if verbose:
-        f_acc, f_loss = eval(test_loader, model=best_net.cuda(), name="test", verbose=verbose)
-        print('Final Accuracy: {:10.5f}, Final Loss: {:10.5f}'.format(f_acc, f_loss))
+        f_acc, f_loss = evaluate_model(test_loader, model=best_net.cuda(), name="test", verbose=verbose)
 
         plt.figure(figsize=(7, 5))
         plt.plot(list(range(args['num_epochs'])), t_loss, label='Training Loss')
@@ -274,7 +283,11 @@ if __name__ == "__main__":
         plt.savefig(os.path.join(args['model_dir'], 'training_plot.jpg'))
 
     torch.save(net.state_dict(), os.path.join(args['model_dir'], 'final_model'))
-    torch.save(best_net, os.path.join(args['model_dir'], 'best_model'))
+    torch.save(best_net.state_dict(), os.path.join(args['model_dir'], 'best_model'))
 
     with open(os.path.join(args['model_dir'], 'settings.json'), 'w') as f:
         json.dump(args, f, indent=2)
+
+
+if __name__ == "__main__":
+    main()
