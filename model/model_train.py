@@ -104,6 +104,7 @@ def train_model(model, optimizer, train_l, valid_l, verbose=True,
 
     if verbose:
         print("Starting Training...")
+        sys.stdout.flush()
 
     # training loop
     for epoch in range(num_epochs):
@@ -152,8 +153,9 @@ def train_model(model, optimizer, train_l, valid_l, verbose=True,
             print('ETA of completion:', (time2 - time1)*(num_epochs - epoch - 1)/60, 'minutes')
             print()
 
-    return train_loss, valid_loss, checkpoint
+        sys.stdout.flush()
 
+    return train_loss, valid_loss, checkpoint
 
 
 def fill_args():
@@ -247,10 +249,12 @@ def main():
     if not os.path.exists(args['model_dir']):
         os.makedirs(args['model_dir'])
 
-    print("train size:", len(train_loader))
-    print("valid size:", len(valid_loader))
-    print("test size:", len(test_loader))
+    if verbose:
+        print("train size:", len(train_loader))
+        print("valid size:", len(valid_loader))
+        print("test size:", len(test_loader))
 
+    sys.stdout.flush()
     opt = torch.optim.SGD(net.parameters(), lr=args['learning_rate'])
     t_loss, v_loss, best_net = train_model(
         model=net, optimizer=opt,
