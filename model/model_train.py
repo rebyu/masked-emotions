@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/opt/conda/envs/ih8life/bin/python
 # coding: utf-8
 
 import sys
@@ -57,7 +57,7 @@ class KaggleDataset(Dataset):
     def __getitem__(self, idx):
         label = torch.tensor(self.labels[idx], dtype=torch.long)
 
-        img_name = f'{idx}_input.jpg'
+        img_name = str(idx)+'_input.jpg'
         img = cv2.imread(os.path.join(self.directory, img_name))
         if self.transform:
             img = self.transform(img)
@@ -205,8 +205,7 @@ if __name__ == "__main__":
     fill_args()
 
     verbose = 'verbose' in args
-    if verbose:
-        print(torch.__version__)
+    print(torch.__version__)
 
     train_set = KaggleDataset(
         args['data_loc'],
@@ -226,13 +225,13 @@ if __name__ == "__main__":
     if args['model'] == 'alexnet':
         net = models.alexnet(pretrained=True)
         net.classifier[6] = nn.Linear(in_features=4096, out_features=7, bias=True)
-    elif args['model'] == 'alexnet':
+    elif args['model'] == 'vgg':
         net = models.vgg11_bn(pretrained=True)
         net.classifier[6] = nn.Linear(in_features=4096, out_features=7, bias=True)
-    elif args['model'] == 'alexnet':
+    elif args['model'] == 'resnet':
         net = models.resnet18(pretrained=True)
         net.fc = nn.Linear(in_features=512, out_features=7, bias=True)
-    elif args['model'] == 'alexnet':
+    elif args['model'] == 'densenet':
         net = models.densenet121(pretrained=True)
         net.classifier = nn.Linear(in_features=1024, out_features=7, bias=True)
     else:

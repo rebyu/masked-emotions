@@ -1,14 +1,17 @@
+#!/opt/conda/bin/python
+
 import numpy as np
 import pandas as pd
 import cv2
 import dlib
 import os
+import sys
+import subprocess
 from tqdm import tqdm
 
-SHAPE_PREDICTOR_LOCATION = "./../shape_predictor_68_face_landmarks.dat"
-DATA_CSV = './icml_face_data.csv'   # https://www.kaggle.com/debanga/facial-expression-recognition-challenge
-IMAGE_DIR_LOC = './../../../'
-
+SHAPE_PREDICTOR_LOCATION = "/home/util/shape_predictor_68_face_landmarks.dat"
+DATA_CSV = '/home/data/icml_face_data.csv'   # https://www.kaggle.com/debanga/facial-expression-recognition-challenge
+IMAGE_DIR_LOC = '/home/data'
 
 
 def split_labels():
@@ -62,7 +65,7 @@ def get_masked_face(img):
 
 def convert_to_image(txt):
     out = np.array([int(x) for x in txt.split(' ')]).reshape(48, 48)
-    out = cv2.resize(np.float32(out), dsize=(224, 224), interpolation=cv2.INTER_CUBIC)
+    out = cv2.resize(np.float32(out), dsize=(110, 110), interpolation=cv2.INTER_CUBIC)
     return np.uint8(out)
 
 def load_images(images, emotions, split):
@@ -70,7 +73,7 @@ def load_images(images, emotions, split):
     idx = 0
 
     for image_txt, emotion in tqdm(zip(images, emotions)):
-        file_location = os.path.join(IMAGE_DIR_LOC, 'images', split, f'{idx}_input.jpg')
+        file_location = os.path.join(IMAGE_DIR_LOC, 'images', split, str(idx) + '_input.jpg')
         image = convert_to_image(image_txt)
 
         try:
