@@ -25,6 +25,7 @@ dataset_transforms = transforms.Compose([
 
 dataset_aug_transforms = transforms.Compose([
     transforms.ToTensor(),
+    transforms.Resize(size=(224, 224)),
     transforms.RandomHorizontalFlip(p=0.5),
     transforms.RandomVerticalFlip(p=0.5),
 ])
@@ -71,6 +72,7 @@ def evaluate_model(
     correct = 0
     total = 0
     loss_sum = 0
+    predict = []
 
     for x, y in loader:
         if gpu_bool:
@@ -83,6 +85,10 @@ def evaluate_model(
         correct += (predicted.float() == y.float()).cpu().sum().data.numpy().item()
         loss_sum += criterion(outputs, y).cpu().data.numpy().item()
 
+        predict.append(predicted.cpu().numpy().tolist())
+
+
+    predict = np.array(predict)
     accuracy = correct / total
     avg_loss = loss_sum / total
 
@@ -90,7 +96,7 @@ def evaluate_model(
         print('%s accuracy: %f %%' % (name, 100 * accuracy))
         print('%s loss: %f' % (name, avg_loss))
 
-    return accuracy, avg_loss, predicted
+    return accuracy, avg_loss, predict
 
 
 def train_model(
@@ -321,7 +327,7 @@ def main():
     torch.save(best_net.state_dict(), os.path.join(args['model_dir'], 'best_model'))
 
     if 'save_predictions' in args:
-        np.save(os.path.join(args['model_dir'], 'test_predictions.npy'), f_pred.cpu().numpy())
+        np.save(os.path.join(args['model_dir'], 'test_predictions.npy'), f_pred)
 
     with open(os.path.join(args['model_dir'], 'settings.json'), 'w') as f:
         json.dump(args, f, indent=2)
