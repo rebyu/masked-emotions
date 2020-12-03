@@ -90,7 +90,7 @@ def evaluate_model(
         print('%s accuracy: %f %%' % (name, 100 * accuracy))
         print('%s loss: %f' % (name, avg_loss))
 
-    return accuracy, avg_loss
+    return accuracy, avg_loss, predicted
 
 
 def train_model(
@@ -138,7 +138,7 @@ def train_model(
             print("Epoch", epoch + 1, ':')
             print("train loss:", curr_loss)
 
-        _, v_loss = evaluate_model(valid_l, model=model, name="valid", verbose=verbose)
+        _, v_loss, _ = evaluate_model(valid_l, model=model, name="valid", verbose=verbose)
         train_loss.append(curr_loss)
         valid_loss.append(v_loss)
 
@@ -203,6 +203,18 @@ def fill_args():
     except ValueError:
         pass
 
+    try:
+        index = sys.argv.index('--save_predictions') + 1
+        args['save_predictions'] = True
+    except ValueError:
+        pass
+
+    try:
+        index = sys.argv.index('--momentum') + 1
+        args['momentum'] = float(sys.argv[index])
+    except ValueError:
+        args['momentum'] = 0
+
     return args
 
 
@@ -218,6 +230,8 @@ def main():
         --model : str
         --verbose : flag
         --pretrained : flag
+        --save_predictions : flag
+        --momentum : flag, int
 
         add later if neccesary
         --use_adam :
@@ -273,15 +287,17 @@ def main():
         print("test size:", len(test_loader))
 
     sys.stdout.flush()
-    opt = torch.optim.SGD(net.parameters(), lr=args['learning_rate'])
+    opt = torch.optim.SGD(net.parameters(), lr=args['learning_rate'], momentum=args['momentum'])
     t_loss, v_loss, net, best_net = train_model(
         model=net, optimizer=opt,
         train_l=train_loader, valid_l=valid_loader,
         num_epochs=args['num_epochs'], verbose=verbose)
 
-    if verbose:
-        _, f_loss = evaluate_model(test_loader, model=best_net.cuda(), name="test", verbose=verbose)
+    _, _, _ = evaluate_model(train_loader, model=best_net.cuda(), name="final train", verbose=verbose)
+    _, _, _ = evaluate_model(valid_loader, model=best_net.cuda(), name="final valid", verbose=verbose)
+    _, f_loss, f_pred = evaluate_model(test_loader, model=best_net.cuda(), name="test", verbose=verbose)
 
+    if verbose:
         plt.figure(figsize=(7, 5))
         plt.plot(list(range(args['num_epochs'])), t_loss, label='Training Loss')
         plt.plot(list(range(args['num_epochs'])), v_loss, label='Validation Loss')
@@ -299,10 +315,14 @@ def main():
 
         np.save(os.path.join(args['model_dir'], 'train_loss.npy'), t_loss)
         np.save(os.path.join(args['model_dir'], 'valid_loss.npy'), v_loss)
+
         plt.savefig(os.path.join(args['model_dir'], 'training_plot.jpg'))
 
     torch.save(net.state_dict(), os.path.join(args['model_dir'], 'final_model'))
     torch.save(best_net.state_dict(), os.path.join(args['model_dir'], 'best_model'))
+
+    if 'save_predictions' in args:
+        np.save(os.path.join(args['model_dir'], 'test_predictions.npy'), f_pred.cpu().numpy())
 
     with open(os.path.join(args['model_dir'], 'settings.json'), 'w') as f:
         json.dump(args, f, indent=2)
