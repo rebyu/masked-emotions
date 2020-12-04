@@ -298,13 +298,13 @@ def main():
         train_l=train_loader, valid_l=valid_loader,
         num_epochs=args['num_epochs'], verbose=verbose)
 
-    _, _, _ = evaluate_model(train_loader, model=net.cuda(), name="final train", verbose=verbose)
-    _, _, _ = evaluate_model(valid_loader, model=net.cuda(), name="final valid", verbose=verbose)
-    _, _, _ = evaluate_model(test_loader, model=net.cuda(), name="test", verbose=verbose)
+    _, _, _ = evaluate_model(train_loader, model=net.cuda(), name="net: final train", verbose=verbose)
+    _, _, _ = evaluate_model(valid_loader, model=net.cuda(), name="net: final valid", verbose=verbose)
+    _, f_loss, f_pred = evaluate_model(test_loader, model=net.cuda(), name="net: test", verbose=verbose)
 
-    _, _, _ = evaluate_model(train_loader, model=best_net.cuda(), name="final train", verbose=verbose)
-    _, _, _ = evaluate_model(valid_loader, model=best_net.cuda(), name="final valid", verbose=verbose)
-    _, f_loss, f_pred = evaluate_model(test_loader, model=best_net.cuda(), name="test", verbose=verbose)
+    _, _, _ = evaluate_model(train_loader, model=best_net.cuda(), name="best net: final train", verbose=verbose)
+    _, _, _ = evaluate_model(valid_loader, model=best_net.cuda(), name="best net: final valid", verbose=verbose)
+    _, _, _ = evaluate_model(test_loader, model=best_net.cuda(), name="best net: test", verbose=verbose)
 
 
 
