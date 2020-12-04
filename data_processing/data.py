@@ -8,13 +8,12 @@ from tqdm import tqdm
 SHAPE_PREDICTOR_LOCATION = "./../../shape_predictor_68_face_landmarks.dat"
 DATA_CSV = './../../facial_expressions/data/legend.csv'
 IMAGE_DIR_LOC = './../../'
-total_images = 0
 
 def split_labels():
     """
     Load in legend of data labels, shuffle, and return split data legend
     Returns:
-        train/test/validation splits of data (image name and emotion label)
+        train/test/validation splits of data (image name, emotion label, emotion key)
     """
     # load data and drop irrelevant user.id column
     data = pd.read_csv(DATA_CSV).drop(labels='user.id', axis=1)
@@ -28,11 +27,9 @@ def split_labels():
 
     # split into train/test/validation split 70/20/10
     length, _ = data.shape
-    global total_images
-    total_images = length
     train, test, validation = np.split(data, [int(.7 * length), int(.9 * length)])
 
-    return train, test, validation, keys
+    return train, test, validation
 
 
 def get_masked_face(img):
@@ -69,8 +66,7 @@ def load_images(image_names, emotions, split):
     out_emotions = []
     idx = 0
 
-    for image_name, emotion in tqdm(zip(image_names, emotions)):
-        print(image_name)
+    for image_name, emotion_key in tqdm(zip(image_names, emotions)):
         infile_location = './../../facial_expressions/images/'+image_name
         outfile_location = os.path.join(IMAGE_DIR_LOC, 'images', split, f'{idx}_input.jpg')
 
@@ -78,7 +74,7 @@ def load_images(image_names, emotions, split):
         gray_image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         try:
             masked = get_masked_face(gray_image)
-            out_emotions.append(emotion)
+            out_emotions.append(emotion_key)
             cv2.imwrite(outfile_location, masked)
             idx += 1
         except Exception as e:
@@ -90,6 +86,9 @@ def load_images(image_names, emotions, split):
 
 def get_image_data(data_splits):
     """
+    Note that emotion keys correspond to index in emotion array:
+    ['HAPPINESS', 'NEUTRAL', 'SURPRISE', 'SADNESS',
+        'ANGER', 'FEAR', 'DISGUST', 'CONTEMPT']
 
     Args:
         data_splits:
@@ -99,7 +98,7 @@ def get_image_data(data_splits):
     """
     for split, data in data_splits.items():
         image_names = data['image'].tolist()
-        emotions = data['emotion'].tolist()
+        emotions = data['emotion_keys'].tolist()
         out_emotions = load_images(image_names, emotions, split)
         np.save(os.path.join(IMAGE_DIR_LOC, 'images', split, 'labels.npy'), out_emotions)
 
@@ -110,5 +109,5 @@ if __name__ == '__main__':
         os.makedirs(os.path.join(IMAGE_DIR_LOC, 'images', 'valid'))
         os.makedirs(os.path.join(IMAGE_DIR_LOC, 'images', 'test'))
 
-    train, test, validation, keys = split_labels()
+    train, test, validation = split_labels()
     get_image_data({'train': train, 'valid': validation, 'test': test})
