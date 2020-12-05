@@ -318,8 +318,8 @@ def main():
         plt.ylabel('Cross Entropy Loss')
         plt.xlabel('Epoch Number')
 
-        plt.xticks(range(0, args['num_epochs']+1, 5))
-        plt.yticks(np.linspace(0, 0.3, 6))
+        plt.xticks(np.linspace(0, args['num_epochs']-1, 10))
+        plt.yticks(np.linspace(0, np.around(np.max(v_loss), 2) + 0.05, 6))
         plt.grid(True)
 
         plt.legend()
