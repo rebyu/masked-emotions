@@ -1,3 +1,5 @@
+#!/opt/conda/envs/emo/bin/python
+
 import numpy as np
 import pandas as pd
 import cv2
@@ -5,9 +7,9 @@ import dlib
 import os
 from tqdm import tqdm
 
-SHAPE_PREDICTOR_LOCATION = "./../../shape_predictor_68_face_landmarks.dat"
+SHAPE_PREDICTOR_LOCATION = "/home/util/shape_predictor_68_face_landmarks.dat"
 DATA_CSV = './../../facial_expressions/data/legend.csv'
-IMAGE_DIR_LOC = './../../'
+IMAGE_DIR_LOC = '/home/data/facial'
 
 def split_labels():
     """
@@ -68,7 +70,7 @@ def load_images(image_names, emotions, split):
 
     for image_name, emotion_key in tqdm(zip(image_names, emotions)):
         infile_location = './../../facial_expressions/images/'+image_name
-        outfile_location = os.path.join(IMAGE_DIR_LOC, 'images', split, f'{idx}_input.jpg')
+        outfile_location = os.path.join(IMAGE_DIR_LOC, 'images', split, str(idx) + '_input.jpg')
 
         image = cv2.cvtColor(cv2.imread(infile_location), cv2.COLOR_BGR2RGB)
         gray_image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
