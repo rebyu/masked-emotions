@@ -21,8 +21,13 @@ def split_labels():
     # randomly shuffle all data
     data = data.sample(frac=1, random_state=0)
 
-    # factorize all keys to integers
+    # capitalize all emotion labels
     data['emotion'] = data['emotion'].str.upper()
+    # Get names of indexes for which emotion is 'CONTEMPT'
+    indexNames = data[data['emotion'] == 'CONTEMPT'].index
+    # Delete these row indexes from dataFrame
+    data.drop(indexNames , inplace=True)
+    # factorize all keys to integers
     data['emotion_keys'], keys = pd.factorize(data['emotion'])
 
     # split into train/test/validation split 70/20/10
@@ -88,7 +93,7 @@ def get_image_data(data_splits):
     """
     Note that emotion keys correspond to index in emotion array:
     ['HAPPINESS', 'NEUTRAL', 'SURPRISE', 'SADNESS',
-        'ANGER', 'FEAR', 'DISGUST', 'CONTEMPT']
+        'ANGER', 'FEAR', 'DISGUST']
 
     Args:
         data_splits:
