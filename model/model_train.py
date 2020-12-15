@@ -26,8 +26,7 @@ dataset_transforms = transforms.Compose([
 dataset_aug_transforms = transforms.Compose([
     transforms.ToTensor(),
     transforms.Resize(size=(224, 224)),
-    transforms.RandomHorizontalFlip(p=0.5),
-    transforms.RandomVerticalFlip(p=0.5),
+    transforms.RandomHorizontalFlip(p=0.5)
 ])
 
 class KaggleDataset(Dataset):
@@ -272,7 +271,7 @@ def main():
         net = models.alexnet(pretrained='pretrained' in args)
         net.classifier[6] = nn.Linear(in_features=4096, out_features=7, bias=True)
     elif args['model'] == 'vgg':
-        net = models.vgg11_bn(pretrained='pretrained' in args)
+        net = models.vgg19_bn(pretrained='pretrained' in args)
         net.classifier[6] = nn.Linear(in_features=4096, out_features=7, bias=True)
     elif args['model'] == 'resnet':
         net = models.resnet18(pretrained='pretrained' in args)
