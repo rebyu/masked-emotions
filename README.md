@@ -14,6 +14,15 @@ The pre-processing script first loads in the train/test/validation splits of dat
 
 Model training python script: model/model_train.py
 
+Our Models:
+- AlexNet, lr = 0.005
+- VGG-11, lr = 0.005
+- VGG-19, lr = 0.005
+- Resnet-18, lr = 0.005
+- DenseNet-121, lr = 0.001
+- DenseNet-121, lr = 0.0025
+- DenseNet-121, lr = 0.01
+
 ## Data Analysis
 
 Data analysis python notebook: data_analysis/analysis.ipynb
