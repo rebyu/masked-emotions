@@ -9,13 +9,13 @@ Use the requirements.txt to install the appropiate libraries for preprocessing d
 
 Main dataset: [Kaggle Facial Expression Recognition Challenge dataset](https://www.kaggle.com/debanga/facial-expression-recognition-challenge)
 
-Pre-processing python script: data_processing/data_kaggle.py
+Pre-processing python script: [data_processing/data_kaggle.py](https://github.com/rebyu/masked-emotions/blob/master/data_processing/data_kaggle.py)
 
 The pre-processing script first loads in the train/test/validation splits of data (image name and emotion label). Then the script uses the dlib facial feature detector to landmark points on the faces in the images and generates a mask onto the images. These images (saved as jpgs) and associated emotion labels (saved in a numpy array) are stored in a generated images folder.
 
 ## Models
 
-Model training python script: train_model.py
+Model training python script: [train_model.py](https://github.com/rebyu/masked-emotions/blob/master/train_model.py)
 
 Use the `--help` flag to see the possible parameters you can pass to train a model. An example usage of the command would be:
 
@@ -23,7 +23,7 @@ Use the `--help` flag to see the possible parameters you can pass to train a mod
   python .\model_train.py --model alexnet --model_dir ./test --batch_size 24 --learning_rate 0.0025 --num_epochs 10 --data_loc ..\..\images\ --verbose --pretrained --data_aug --save_predictions
 ```
 
-Our Models:
+### Our Models:
 
 - AlexNet, lr = 0.005, 150 epochs
 - VGG-11, lr = 0.005, 150 epochs
@@ -33,9 +33,11 @@ Our Models:
 - DenseNet-121, lr = 0.0025, 150 epochs
 - DenseNet-121, lr = 0.01, 200 epochs
 
+These models are saved in our google drive in a zip.
+
 ## Data Analysis
 
-Data analysis python notebook: analyze_model.ipynb
+Data analysis python notebook: [analyze_model.ipynb](https://github.com/rebyu/masked-emotions/blob/master/analyze_model.ipynb)
 
 The python notebook takes the true labels from the dataset and the predicted labels of our models to create:
 
@@ -43,15 +45,16 @@ The python notebook takes the true labels from the dataset and the predicted lab
 - Bar plots of the distribution of true and predicted labels
 - Overall accuracy score of the predicted labels
 
-The predicted labels and resulting data analysis graphs for each model can be found at this [link](https://drive.google.com/drive/folders/1_sh348O2K7cZBb60xmy3_qVxoWTO5d5E?usp=sharing), with their respectively named folders.
+The predicted labels and resulting data analysis graphs for each model can be found in the google drive, with their respectively named folders.
 
 ## Simple Testing
 
-Notebook for generating predictions: run_model.ipynb
+Notebook for generating predictions: [run_model.ipynb](https://github.com/rebyu/masked-emotions/blob/master/run_model.ipynb)
 
 There are fields to allow you to choose a model to run and what image to test on, which are indicated in the notebook. Simply run the entire notebook to generate the models prediction on the example.
 
 ## Credits
+
 Collaborators: Rebecca Yu, Silu Men, Eugene Asare, Jennifer Lin
 
 [Google Drive Link](https://drive.google.com/drive/folders/1CGh-vtHR73mHsYgof3eQf965zkD4R2sx)
