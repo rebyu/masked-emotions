@@ -123,6 +123,8 @@ def train_model(
             if gpu_bool:
                 x, y = x.cuda(), y.cuda()
 
+                print(x)
+
             optimizer.zero_grad()
             outputs = model.forward(x)
 
