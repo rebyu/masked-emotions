@@ -33,7 +33,7 @@ Use the `--help` flag to see the possible parameters you can pass to train a mod
 - DenseNet-121, lr = 0.0025, 150 epochs
 - DenseNet-121, lr = 0.01, 200 epochs
 
-These models are saved in our google drive in a zip.
+These models are saved in our google drive in a zip named models.zip.
 
 ## Data Analysis
 
@@ -45,7 +45,7 @@ The python notebook takes the true labels from the dataset and the predicted lab
 - Bar plots of the distribution of true and predicted labels
 - Overall accuracy score of the predicted labels
 
-The predicted labels and resulting data analysis graphs for each model can be found in the google drive, with their respectively named folders.
+The predicted labels and resulting data analysis graphs for each model can be found in the google drive, in the folder data_analysis, with their respectively named folders.
 
 ## Simple Testing
 
