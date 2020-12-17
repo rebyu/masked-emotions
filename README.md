@@ -33,7 +33,7 @@ Use the `--help` flag to see the possible parameters you can pass to train a mod
 - DenseNet-121, lr = 0.0025, 150 epochs
 - DenseNet-121, lr = 0.01, 200 epochs
 
-These models are saved in our google drive in a zip.
+These models are saved in our google drive in a zip named models.zip.
 
 ## Data Analysis
 
