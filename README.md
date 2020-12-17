@@ -45,7 +45,7 @@ The python notebook takes the true labels from the dataset and the predicted lab
 - Bar plots of the distribution of true and predicted labels
 - Overall accuracy score of the predicted labels
 
-The predicted labels and resulting data analysis graphs for each model can be found in the google drive, with their respectively named folders.
+The predicted labels and resulting data analysis graphs for each model can be found in the google drive, in the folder data_analysis, with their respectively named folders.
 
 ## Simple Testing
 
